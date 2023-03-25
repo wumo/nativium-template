@@ -1,70 +1,70 @@
-name: Docs
-
-on:
-  push:
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'extras/images/**'
-
-jobs:
-  build:
-    name: ${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - { name: "Ubuntu", os: ubuntu-latest }
-        python-version: [3.7]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Upgrade PIP
-        run: python3 -m pip install --upgrade pip setuptools wheel
-
-      - name: Display Python Version
-        run: python3 --version
-
-      - name: Display PIP Version
-        run: python3 -m pip --version
-
-      - name: Nativium - Install Python Dependencies
-        run: python3 -m pip install -r requirements.txt
-
-      - name: Nativium - Generate
-        run: python3 nativium.py doc generate
-
-      - name: Pack
-        run: python3 -m tarfile -c docs.tar.gz docs
-        working-directory: build
-
-      - name: Github Action - Upload
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-docs.tar.gz
-          path: build/docs.tar.gz
-
-      - name: Nativium - Publish
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          NATIVIUM_AWS_KEY_ID: ${{ secrets.NATIVIUM_AWS_KEY_ID }}
-          NATIVIUM_AWS_SECRET_KEY: ${{ secrets.NATIVIUM_AWS_SECRET_KEY }}
-        run: python3 nativium.py doc publish --force
-
-      - name: Release - Setup
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: mv build/docs.tar.gz docs.tar.gz
-
-      - name: Release
-        id: upload-release-asset
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          files: docs.tar.gz
+#name: Docs
+#
+#on:
+#  push:
+#    paths-ignore:
+#      - '**.md'
+#      - 'docs/**'
+#      - 'extras/images/**'
+#
+#jobs:
+#  build:
+#    name: ${{ matrix.config.name }}
+#    runs-on: ${{ matrix.config.os }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        config:
+#          - { name: "Ubuntu", os: ubuntu-latest }
+#        python-version: [3.7]
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Set up Python ${{ matrix.python-version }}
+#        uses: actions/setup-python@v1
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#
+#      - name: Upgrade PIP
+#        run: python3 -m pip install --upgrade pip setuptools wheel
+#
+#      - name: Display Python Version
+#        run: python3 --version
+#
+#      - name: Display PIP Version
+#        run: python3 -m pip --version
+#
+#      - name: Nativium - Install Python Dependencies
+#        run: python3 -m pip install -r requirements.txt
+#
+#      - name: Nativium - Generate
+#        run: python3 nativium.py doc generate
+#
+#      - name: Pack
+#        run: python3 -m tarfile -c docs.tar.gz docs
+#        working-directory: build
+#
+#      - name: Github Action - Upload
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: artifact-docs.tar.gz
+#          path: build/docs.tar.gz
+#
+#      - name: Nativium - Publish
+#        if: startsWith(github.ref, 'refs/tags/v')
+#        env:
+#          NATIVIUM_AWS_KEY_ID: ${{ secrets.NATIVIUM_AWS_KEY_ID }}
+#          NATIVIUM_AWS_SECRET_KEY: ${{ secrets.NATIVIUM_AWS_SECRET_KEY }}
+#        run: python3 nativium.py doc publish --force
+#
+#      - name: Release - Setup
+#        if: startsWith(github.ref, 'refs/tags/v')
+#        run: mv build/docs.tar.gz docs.tar.gz
+#
+#      - name: Release
+#        id: upload-release-asset
+#        uses: softprops/action-gh-release@v1
+#        if: startsWith(github.ref, 'refs/tags/v')
+#        with:
+#          files: docs.tar.gz
